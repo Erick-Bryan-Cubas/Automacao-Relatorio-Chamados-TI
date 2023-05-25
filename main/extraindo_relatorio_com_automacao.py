@@ -4,6 +4,16 @@ from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pyautogui
+import csv
+import json
+import os
+import pandas as pd
+
+caminho_usuario = os.environ['USERPROFILE']
+file_path = 'chamados.csv'
+local_arquivo = os.path.join(caminho_usuario, "Downloads", file_path)
+local_destino = os.path.join(caminho_usuario, 'ARQUIVOS', 'INTRANET')
+
 
 # Configurar as opções do navegador Chrome
 options = Options()
@@ -24,7 +34,7 @@ email_input = driver.find_element(
 email_input.clear()
 
 # Digitar o e-mail desejado
-email_input.send_keys('thecubas@outlook.com')
+email_input.send_keys('{E-MAIL}')
 
 # Simular pressionar a tecla Enter
 email_input.send_keys(Keys.ENTER)
@@ -41,7 +51,7 @@ senha_input = driver.find_element(
 senha_input.clear()
 
 # Digitar a senha
-senha_input.send_keys('trojan22@#$')
+senha_input.send_keys('{SENHA}')
 
 time.sleep(2)  # Aguarda 5 segundos
 
@@ -85,7 +95,7 @@ senha_input = driver.find_element(
 senha_input.clear()
 
 # Digitar a senha
-senha_input.send_keys('trojan22@#$')
+senha_input.send_keys('{SENHA}')
 
 time.sleep(2)  # Aguarda 5 segundos
 
@@ -133,4 +143,47 @@ time.sleep(10)  # Aguarda 5 segundos
 
 # Fechar o navegador
 driver.quit()
-pyautogui.alert('Relatório baixado')
+# pyautogui.alert('Relatório baixado')
+
+# Leia o arquivo CSV
+# with open('C:\\Users\\Solidy-TI\\Downloads\\chamados.csv', mode='r', encoding='utf-8') as csvfile:
+    
+    
+if os.path.exists(local_arquivo):
+    dfu = pd.read_csv(f"{local_arquivo}",
+                      skiprows=1,
+                      sep=";",
+                      encoding="UTF-8"
+                      )
+else:
+    time.sleep(5)
+
+nome_saida = os.path.join(local_destino, f"chamados.csv")
+nome_saida2 = os.path.join(local_destino, f"chamados.json")
+dados = dfu.to_dict(orient='records')
+
+if os.path.exists(nome_saida):
+    os.remove(nome_saida)
+    dfu.to_csv(nome_saida,
+               header=True,
+               index=False,
+               sep=";",
+               encoding="UTF-8"
+               )
+
+else:
+    dfu.to_csv(nome_saida,
+               header=True,
+               index=False,
+               sep=";",
+               encoding="UTF-8"
+               )
+
+if os.path.exists(nome_saida2):
+    os.remove(nome_saida2)
+    with open(nome_saida2, 'w', encoding='utf-8') as f:
+        json.dump(dados, f, ensure_ascii=False, indent=4)
+
+else:
+    with open(nome_saida2, 'w', encoding='utf-8') as f:
+        json.dump(dados, f, ensure_ascii=False, indent=4)
