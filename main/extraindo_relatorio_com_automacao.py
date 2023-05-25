@@ -2,18 +2,24 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
+from datetime import datetime as dt
 import time
 import pyautogui
 import csv
 import json
 import os
 import pandas as pd
+import math
+
 
 caminho_usuario = os.environ['USERPROFILE']
 file_path = 'chamados.csv'
 local_arquivo = os.path.join(caminho_usuario, "Downloads", file_path)
 local_destino = os.path.join(caminho_usuario, 'ARQUIVOS', 'INTRANET')
 
+# Apagando os arquivos anteriores existentes
+if os.path.exists(local_arquivo):
+    os.remove(local_arquivo)
 
 # Configurar as opções do navegador Chrome
 options = Options()
@@ -41,7 +47,6 @@ email_input.send_keys(Keys.ENTER)
 
 time.sleep(5)  # Aguarda 5 segundos
 
-
 # Digitar a senha
 senha_input = driver.find_element(
     'xpath', '/html/body/div[1]/div[3]/div[1]/div[1]/div/div[1]/form/div[1]/input'
@@ -54,7 +59,6 @@ senha_input.clear()
 senha_input.send_keys('{SENHA}')
 
 time.sleep(2)  # Aguarda 5 segundos
-
 
 # Localizar o botão "Acessar" pelo caminho completo fornecido
 acessar_button = driver.find_element(
@@ -129,7 +133,6 @@ acessar_button.click()
 
 time.sleep(10)  # Aguarda 5 segundos
 
-
 # Localizar o botão "Help Desk" pelo caminho completo fornecido
 acessar_button = driver.find_element(
     'xpath', '//*[@id="body-content"]/div[2]/div[1]/div[1]/div[2]/ul/li[2]/a'
@@ -138,29 +141,79 @@ acessar_button = driver.find_element(
 # Clicar no botão "Acessar"
 acessar_button.click()
 
-time.sleep(10)  # Aguarda 5 segundos
-
-
-# Fechar o navegador
-driver.quit()
 # pyautogui.alert('Relatório baixado')
 
 # Leia o arquivo CSV
 # with open('C:\\Users\\Solidy-TI\\Downloads\\chamados.csv', mode='r', encoding='utf-8') as csvfile:
-    
-    
-if os.path.exists(local_arquivo):
-    dfu = pd.read_csv(f"{local_arquivo}",
-                      skiprows=1,
-                      sep=";",
-                      encoding="UTF-8"
-                      )
-else:
-    time.sleep(5)
+
+arquivo = True
+
+while arquivo == True:
+    if os.path.exists(local_arquivo):
+        dfu = pd.read_csv(f"{local_arquivo}",
+                          skiprows=0,
+                          sep=";",
+                          encoding="UTF-8"
+                          )
+        # Fechar o navegador
+        driver.quit()
+        arquivo = False
+    else:
+        # Aguarda 5 segundos
+        time.sleep(5)
+
+# Renomeando as colunas
+dfu = dfu.rename(columns={"Código":"id_chamado",
+                          "Assunto":"assunto",
+                          "Contato":"contato",
+                          "Email do Contato":"email_do_contato",
+                          "Unidade":"unidade",
+                          "Departamento":"departamento",
+                          "Cargo":"cargo",
+                          "Tipo":"tipo",
+                          "Situação":"situacao",
+                          "Atendente":"atendente",
+                          "Grupo":"grupo",
+                          "Prioridade":"prioridade",
+                          "Criado Em": "criado_em",
+                          "Prazo da primeira resposta": "prazo_da_primeira_resposta",
+                          "Primeira resposta":"primeira_resposta",
+                          "Prazo de resolução":"prazo_de_resolucao",
+                          "Concluído Em":"concluído_em",
+                          "Ultima alteração":"ultima_alteracao",
+                          "SLA":"sla",
+                          "Primeira atribuição em":"primeira_atribuicao_em"
+                          })
+
+
+# Lista de colunas de data para formatar
+colunas_data = [
+    "criado_em",
+    "prazo_da_primeira_resposta",
+    "primeira_resposta",
+    "prazo_de_resolucao",
+    "concluído_em",
+    "ultima_alteracao",
+    "primeira_atribuicao_em"
+]
+
+# Converter todas as colunas de data para o formato correto
+for coluna in colunas_data:
+    dfu[coluna] = pd.to_datetime(dfu[coluna], format="%d/%m/%Y %H:%M").dt.strftime("%Y-%m-%d %H:%M")
+
 
 nome_saida = os.path.join(local_destino, f"chamados.csv")
 nome_saida2 = os.path.join(local_destino, f"chamados.json")
 dados = dfu.to_dict(orient='records')
+
+
+# Modificando os valores de NONE para NULL
+for dict in dados:
+    for chave, valor in dict.items():
+        if isinstance(valor, float) and math.isnan(valor):
+            dict[chave] = None
+
+
 
 if os.path.exists(nome_saida):
     os.remove(nome_saida)
@@ -187,3 +240,4 @@ if os.path.exists(nome_saida2):
 else:
     with open(nome_saida2, 'w', encoding='utf-8') as f:
         json.dump(dados, f, ensure_ascii=False, indent=4)
+
