@@ -13,7 +13,7 @@ options.add_argument("--disable-notifications")  # Desabilitar notificações, s
 driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
 
 # Acessar o site
-driver.get('{ENDEREÇO INTRANET}')
+driver.get('https://intranet.solidy.org.br/intranet/login')
 
 # Localizar o campo de entrada de e-mail pelo caminho completo fornecido
 email_input = driver.find_element(
@@ -24,7 +24,7 @@ email_input = driver.find_element(
 email_input.clear()
 
 # Digitar o e-mail desejado
-email_input.send_keys('{EMAIL}')
+email_input.send_keys('thecubas@outlook.com')
 
 # Simular pressionar a tecla Enter
 email_input.send_keys(Keys.ENTER)
@@ -41,7 +41,7 @@ senha_input = driver.find_element(
 senha_input.clear()
 
 # Digitar a senha
-senha_input.send_keys('[SENHA}')
+senha_input.send_keys('trojan22@#$')
 
 time.sleep(2)  # Aguarda 5 segundos
 
@@ -85,7 +85,7 @@ senha_input = driver.find_element(
 senha_input.clear()
 
 # Digitar a senha
-senha_input.send_keys('{SENHA}')
+senha_input.send_keys('trojan22@#$')
 
 time.sleep(2)  # Aguarda 5 segundos
 
